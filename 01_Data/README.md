@@ -14,3 +14,5 @@
   -- Robot position z: see as variable 529
   -- Conveyor speed: see as low (300:390) / Fast (390:750) / Too fast (750:950)
   -- Quality of the piece: see DistanceAbs
+
+- The piece is considered as OK part as long as the "DistanceAbs" < 1.5
