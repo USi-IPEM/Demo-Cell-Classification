@@ -42,6 +42,7 @@ Input:
   - Max raw conveyor "speed" value.
 
 Output:
+ - Last qc entry in each file.
  - Quality control float (regression) / bool (classification).
 
 Required data:
