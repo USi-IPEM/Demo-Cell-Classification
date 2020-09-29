@@ -18,3 +18,15 @@
   - Quality of the piece: see DistanceAbs
 
 - The piece is considered as OK part as long as the "DistanceAbs" < 1.5
+
+
+- Robot_pos:
+  - Gate: Dropping down disk
+    - x < 1050000000
+    - y > 3100000000
+    - z < 1052000000
+  - Storage: Pick up disk
+    - x > 3100000000
+    - y > 3100000000
+    - z < 1052000000
+  
