@@ -44,6 +44,8 @@ Input:
 Output:
  - Quality control float (regression) / bool (classification).
 
+Required data:
+ - Iris data set ~150.
 
 Sequence approach
 -------------
@@ -56,6 +58,6 @@ Input:
 Output:
  - Quality control float (regression) / bool (classification).
  
-Problem:
+Required data (Problem!):
  - RNNs models in the literature use weeks/months of data.
 
