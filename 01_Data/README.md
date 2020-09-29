@@ -55,3 +55,7 @@ Input:
 
 Output:
  - Quality control float (regression) / bool (classification).
+ 
+Problem:
+ - RNNs models in the literature use weeks/months of data.
+
