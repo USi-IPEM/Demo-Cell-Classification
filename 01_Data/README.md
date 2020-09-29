@@ -1,3 +1,6 @@
+Data details
+------------
+
 - Data collection organized by files (date) <yymmdd>
 
 - zz-Archiv: folder archiv
@@ -30,3 +33,14 @@
     - y > 3100000000
     - z < 1052000000
   
+  
+SVM vectors
+------------------
+
+Input:
+  - Middle arm position in the gate.
+  - Raw conveor "speed" value.
+
+Output:
+ - Quality control float.
+
