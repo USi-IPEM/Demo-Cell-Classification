@@ -39,7 +39,7 @@ SVM vectors
 
 Input:
   - Middle arm position in the gate.
-  - Raw conveor "speed" value.
+  - Max raw conveor "speed" value.
 
 Output:
  - Quality control float (regression) / bool (classification).
