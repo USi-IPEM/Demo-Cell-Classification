@@ -42,5 +42,5 @@ Input:
   - Raw conveor "speed" value.
 
 Output:
- - Quality control float.
+ - Quality control float (regression) / bool (classification).
 
