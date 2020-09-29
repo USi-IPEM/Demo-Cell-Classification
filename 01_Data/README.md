@@ -13,6 +13,7 @@
   - Robot position x: see as variable 527
   - Robot position y: see as variable 528
   - Robot position z: see as variable 529
+  - 1,052 z position at disc drop.
   - Conveyor speed: see as low (300:390) / Fast (390:750) / Too fast (750:950)
   - Quality of the piece: see DistanceAbs
 
