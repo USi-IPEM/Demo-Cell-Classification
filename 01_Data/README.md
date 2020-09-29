@@ -35,7 +35,7 @@ Data details
   
   
 SVM vectors
-------------------
+-----------
 
 Input:
   - Middle arm position in the gate.
@@ -44,3 +44,14 @@ Input:
 Output:
  - Quality control float (regression) / bool (classification).
 
+
+RNN sequences
+-------------
+
+Input:
+  - Arm pos sequence.
+  - Belt speed sequences.
+  
+
+Output:
+ - Quality control float (regression) / bool (classification).
