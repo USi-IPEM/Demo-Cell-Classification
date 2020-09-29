@@ -34,7 +34,7 @@ Data details
     - z < 1052000000
   
   
-SVM vectors
+Vector approach
 -----------
 
 Input:
@@ -45,7 +45,7 @@ Output:
  - Quality control float (regression) / bool (classification).
 
 
-RNN sequences
+Sequence approach
 -------------
 
 Input:
