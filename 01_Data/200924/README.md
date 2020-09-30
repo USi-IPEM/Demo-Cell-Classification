@@ -8,7 +8,6 @@
 
 ---
 # Variable info
----
 
 - Store:
 
