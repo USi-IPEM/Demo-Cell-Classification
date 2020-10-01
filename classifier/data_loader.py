@@ -2,8 +2,13 @@ import os
 import pandas
 import numpy as np
 from collections import namedtuple
+import matplotlib.pyplot as plt
 
-CellSample = namedtuple('CellSample', ['use_case', 'raw_data', 'x', 'y'])
+CellSample = namedtuple('CellSample',
+                        ['use_case',
+                         'sample_file',
+                         'raw_data',
+                         'x', 'y'])
 
 class DataLoader(object):
     """ Load the demo-cell data. """
@@ -30,7 +35,10 @@ class DataLoader(object):
                 for current_file in files:
                     pandas_file = pandas.read_csv(root + current_file)
                     use_case = path.split('/')[3]
-                    sample_list.append(CellSample(use_case=use_case, raw_data=pandas_file,
+                    sample_file = current_file
+                    sample_list.append(CellSample(use_case=use_case,
+                                                  sample_file=sample_file,
+                                                  raw_data=pandas_file,
                                                   x=None, y=None))
         self.raw_sample_list = sample_list
 
@@ -40,6 +48,7 @@ class DataLoader(object):
         for sample in self.raw_sample_list:
             x, y = self._process_table(sample.raw_data)        
             self.sample_list.append(CellSample(use_case=sample.use_case,
+                                               sample_file=sample.sample_file,
                                                raw_data=sample.raw_data,
                                                x=x,
                                                y=y))
@@ -49,7 +58,40 @@ class DataLoader(object):
         """ Extrat the input x and target y values from the current
             data frame"""
         rows, cols = raw_data.shape
-        print(raw_data)
+        robot_x_lst = []
+        robot_y_lst = []
+        robot_z_lst = []
+        belt_max_lst = []  # belt values are missing.
+        qc_lst = []
+        for row in raw_data.itertuples():
+            # current_row = raw_data[row_no, :]
+            if row.PrimaryKey == '527':
+                # 527_x: Robot position in x.
+                print(row)
+                robot_x_lst.append(row.Value)
+            if row.PrimaryKey == '528':
+                # 528_y: Robot position in y.
+                print(row)
+                robot_y_lst.append(row.Value)
+            if row.PrimaryKey == '529':
+                # 529_z: Robot position in z.
+                robot_z_lst.append(row.Value)
+                print(row)
+            if row.PrimaryKey == 'conv':
+                # placeholder for belt data.
+                pass
+            if row.PrimaryKey == 'ResultCode':
+                qc_lst.append(row.Value)
+        
+        plt.Figure()
+        plt.plot(robot_x_lst)
+        plt.plot(robot_y_lst)
+        plt.plot(robot_z_lst)
+        plt.show()
+        plt.Figure()
+        plt.plot(qc_lst)
+        plt.show()
+        print('stop')
 
 
 if __name__ == '__main__':
