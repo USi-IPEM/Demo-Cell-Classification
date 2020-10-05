@@ -20,7 +20,10 @@ Robot:
 
 Conveyor Belt:
 --------------
-
-
-tbd
+- Speed:
+  - 27: conv1
+  - 28: conv2
+  - 29: conv3
+  
+  Higher the number, faster the speed. The range goes from 300 to 950 in values.
 
