@@ -16,7 +16,6 @@ print(os.getcwd())
 demo_cell_data = DataLoader(case_path_lst=path_lst, debug=True)
 X_train, y_train = demo_cell_data.get_train_xy()
 
-from sklearn import svm
 clf = svm.SVC()
 clf.fit(X_train, y_train)
 
