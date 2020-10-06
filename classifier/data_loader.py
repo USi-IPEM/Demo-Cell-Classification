@@ -21,10 +21,33 @@ class DataLoader(object):
             debug (bool): Shows plots of the data if True. 
         """
         self.case_path_lst = case_path_lst
-        self.raw_sample_list = None
-        self.sample_list = None
+        self.raw_sample_list = []
+        self.sample_list = []
+        self.x_array = None
+        self.y_array = None
         self._load()
         self._create_xy()
+        self._create_data_array()
+        self._preprocess()
+        print('stop')
+
+
+    def _preprocess(self):
+
+    def _create_data_array(self):
+        """ Create an array with all samples.
+        """
+        x = []
+        y = []
+        for sample in self.sample_list:
+            if not np.isnan(np.sum(sample.x)):
+                x.append(sample.x)
+                y.append(sample.y)
+            else:
+                print('skipping', sample.use_case, sample.sample_file)
+        self.x_array = np.stack(x, axis=0)
+        self.y_array = np.stack(y, axis=0)
+        assert self.x_array.shape[0] == self.y_array.shape[0]
 
     def _load(self):
         """ Load the processed csv files and list their values as
@@ -46,7 +69,7 @@ class DataLoader(object):
         """ Create the input x and target y for the machine learning
             optimization. """
         for sample in self.raw_sample_list:
-            x, y = self._process_table(sample.raw_data)        
+            x, y = self._process_table(sample)        
             self.sample_list.append(CellSample(use_case=sample.use_case,
                                                sample_file=sample.sample_file,
                                                raw_data=sample.raw_data,
@@ -54,51 +77,83 @@ class DataLoader(object):
                                                y=y))
 
 
-    def _process_table(self, raw_data: pandas.DataFrame):
+    def _process_table(self, sample):
         """ Extrat the input x and target y values from the current
             data frame"""
+        raw_data = sample.raw_data
         rows, cols = raw_data.shape
         robot_x_lst = []
         robot_y_lst = []
         robot_z_lst = []
-        belt_max_lst = []  # belt values are missing.
+        conv1_lst = []
+        conv2_lst = []
+        conv3_lst = []
         qc_lst = []
         for row in raw_data.itertuples():
             # current_row = raw_data[row_no, :]
             if row.PrimaryKey == '527':
                 # 527_x: Robot position in x.
-                print(row)
-                robot_x_lst.append(row.Value)
+                # print(row)
+                robot_x_lst.append(float(row.Value))
             if row.PrimaryKey == '528':
                 # 528_y: Robot position in y.
-                print(row)
-                robot_y_lst.append(row.Value)
+                # print(row)
+                robot_y_lst.append(float(row.Value))
             if row.PrimaryKey == '529':
                 # 529_z: Robot position in z.
-                robot_z_lst.append(row.Value)
-                print(row)
-            if row.PrimaryKey == 'conv':
-                # placeholder for belt data.
-                pass
+                robot_z_lst.append(float(row.Value))
+                # print(row)
+            if row.PrimaryKey == '27':
+                # belt1 data.
+                conv1_lst.append(float(row.Value))
+            if row.PrimaryKey == '28':
+                # belt1 data.
+                conv2_lst.append(float(row.Value))
+            if row.PrimaryKey == '29':
+                # belt1 data.
+                conv3_lst.append(float(row.Value))
             if row.PrimaryKey == 'ResultCode':
-                qc_lst.append(row.Value)
+                qc_lst.append(float(row.Value))
         
-        plt.Figure()
-        plt.plot(robot_x_lst)
-        plt.plot(robot_y_lst)
-        plt.plot(robot_z_lst)
-        plt.show()
-        plt.Figure()
-        plt.plot(qc_lst)
-        plt.show()
-        print('stop')
+        z_val = np.nan
+        x_val = np.nan
+        y_val = np.nan
+        for no, z in enumerate(robot_z_lst):
+            if int(z) < 1052000000:
+                # drop
+                z_val = int(z)
+                x_val = int(robot_x_lst[no])
+                y_val = int(robot_z_lst[no])
+                break
+        
+        conv1_array = np.array(conv1_lst)
+        conv2_array = np.array(conv2_lst)
+        conv3_array = np.array(conv3_lst)
+
+        x = np.array([x_val,
+                      y_val,
+                      z_val,
+                      np.max(conv1_lst),
+                      np.max(conv2_lst),
+                      np.max(conv3_lst)])
+        
+        if float(qc_lst[-1]) < 1.5:
+            qc = 1.
+        else:
+            qc = 0.
+        y = np.array([qc])
+        # print(qc_lst)
+        return x, y
 
 
 if __name__ == '__main__':
-    path_lst = ['./01_Data/200924/use_case1/Processed/Samples/',
-                './01_Data/200924/use_case2/Processed/Samples/',
-                './01_Data/200924/use_case3/Processed/Samples/',
-                './01_Data/200924/use_case4/Processed/Samples/',
-                './01_Data/200924/use_case5/Processed/Samples/']
+    path_lst = ['../01_Data/200924/use_case1/Processed/Samples/',
+                '../01_Data/200924/use_case2/Processed/Samples/',
+                '../01_Data/200924/use_case3/Processed/Samples/',
+                '../01_Data/200924/use_case4/Processed/Samples/',
+                '../01_Data/200924/use_case5/Processed/Samples/']
+
+    os.chdir(os.path.dirname(__file__))
+    print(os.getcwd())
 
     demo_cell_data = DataLoader(case_path_lst=path_lst, debug=True)

@@ -1,5 +1,0 @@
-00000005
-1	250	1	0	0	0	ns=2;s=DistanceAbs
-2	250	1	0	0	0	ns=2;s=DistanceX
-3	250	1	0	0	0	ns=2;s=DistanceY
-4	250	1	0	0	0	ns=2;s=ResultCode
