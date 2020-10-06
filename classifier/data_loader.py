@@ -1,6 +1,7 @@
 import os
 import pandas
 import numpy as np
+from random import shuffle
 from collections import namedtuple
 import matplotlib.pyplot as plt
 
@@ -13,29 +14,56 @@ CellSample = namedtuple('CellSample',
 class DataLoader(object):
     """ Load the demo-cell data. """
 
-    def __init__(self, case_path_lst: list, debug: bool):
+    def __init__(self, case_path_lst: list, debug: bool, test_size=20):
         """ Creat a data loader object for the demo cell.
 
         Args:
             case_path_lst (list): List of use case measurements to use.
             debug (bool): Shows plots of the data if True. 
         """
+        self.test_size = 20
         self.case_path_lst = case_path_lst
         self.raw_sample_list = []
         self.sample_list = []
         self.x_array = None
         self.y_array = None
+        self.x_train = None
+        self.y_train = None
+        self.x_test = None
+        self.y_test = None
         self._load()
         self._create_xy()
         self._create_data_array()
         self._preprocess()
+        self._split()
         print('stop')
 
+    def get_train_xy(self):
+        return self.x_train, self.y_train
+
+    def get_test_xy(self):
+        return self.x_test, self.y_test
 
     def _preprocess(self):
+        """ Create zero mean and unit std data. """
+        x_mean = np.mean(self.x_array, axis=0)
+        x_std = np.std(self.x_array, axis=0)
+        self.x_array = self.x_array - np.expand_dims(x_mean, 0)
+        self.x_array = self.x_array / x_std
+        print('mean', np.mean(self.x_array, 0))
+        print('std', np.std(self.x_array, 0))
+
+    def _split(self):
+        """ Split into train and test data."""
+        samples = self.x_array.shape[0]
+        self.x_train = self.x_array[:-self.test_size]
+        self.x_test = self.x_array[(samples-self.test_size):]
+        self.y_train = self.y_array[:-self.test_size]
+        self.y_test = self.y_array[(samples-self.test_size):]
+
 
     def _create_data_array(self):
-        """ Create an array with all samples.
+        """ Create and shuffle an array with all samples.
         """
         x = []
         y = []
@@ -44,9 +72,19 @@ class DataLoader(object):
                 x.append(sample.x)
                 y.append(sample.y)
             else:
-                print('skipping', sample.use_case, sample.sample_file)
-        self.x_array = np.stack(x, axis=0)
-        self.y_array = np.stack(y, axis=0)
+                print('skipping', sample.use_case, sample.sample_file, 
+                      'no valid z value for drop.')
+
+        x_rnd = []
+        y_rnd = []
+        index_rnd = list(range(len(x)))
+        shuffle(index_rnd)
+        for i in index_rnd:
+            x_rnd.append(x[i])
+            y_rnd.append(y[i])
+
+        self.x_array = np.stack(x_rnd, axis=0)
+        self.y_array = np.stack(y_rnd, axis=0)
         assert self.x_array.shape[0] == self.y_array.shape[0]
 
     def _load(self):
