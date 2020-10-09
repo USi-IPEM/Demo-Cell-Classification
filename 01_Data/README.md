@@ -33,6 +33,10 @@ Data details
     - y > 3100000000
     - z < 1052000000
   
+- Column 'RobPos'
+  - 0: Not relevant/ in movement
+  - 1: In storage/store
+  - 2: In gate
   
 Vector approach
 -----------
