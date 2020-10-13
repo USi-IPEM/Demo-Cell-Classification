@@ -16,22 +16,22 @@ Data details
   - Robot position x: see as variable 527
   - Robot position y: see as variable 528
   - Robot position z: see as variable 529
-  - 1052000000 z position at disc drop.
+  - Position at disc drop: rob_z < 1052000000 and rob_z > 1051200000
   - Conveyor speed: see as low (300:390) / Fast (390:750) / Too fast (750:950)
   - Quality of the piece: see DistanceAbs
 
 - The piece is considered as OK part as long as the "DistanceAbs" < 1.5
 
-
 - Robot_pos:
   - Gate: Dropping down disk
-    - x < 1050000000
-    - y > 3100000000
-    - z < 1052000000
+    - rob_x < 1050000000
+    - rob_y > 3100000000
+    - rob_z < 1052000000 and rob_z > 1051200000
+       
   - Storage: Pick up disk
-    - x > 3100000000
-    - y > 3100000000
-    - z < 1052000000
+    - rob_x > 3100000000
+    - rob_y > 3100000000
+    - rob_z < 1051200000
   
 - Column 'RobPos'
   - 0: Not relevant/ in movement
