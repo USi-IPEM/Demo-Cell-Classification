@@ -114,9 +114,12 @@ class DataLoader(object):
                 qc_lst.append(float(row.Value))
         
         # plot the sample
+        print(sample.use_case)
+        print(sample.sample_file)
         plt.plot(robot_x_lst, label='x')
         plt.plot(robot_y_lst, label='y')
         plt.plot(robot_z_lst, label='z')
+        plt.legend()
         plt.show()
  
         input('press any key to continue.')
