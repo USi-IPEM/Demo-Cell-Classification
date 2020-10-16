@@ -10,8 +10,8 @@ path_lst = ['../01_Data/200924/use_case1/Processed/Samples/',
             '../01_Data/200924/use_case4/Processed/Samples/',
             '../01_Data/200924/use_case5/Processed/Samples/']
 
-#os.chdir(os.path.dirname(__file__))
-#print(os.getcwd())
+os.chdir(os.path.dirname(__file__))
+print(os.getcwd())
 
 demo_cell_data = DataLoader(case_path_lst=path_lst, debug=True)
 X_train, y_train = demo_cell_data.get_train_xy()
