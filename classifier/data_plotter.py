@@ -116,6 +116,7 @@ class DataLoader(object):
         # plot the sample
         print(sample.use_case)
         print(sample.sample_file)
+        plt.title(sample.use_case + '_' + sample.sample_file)
         plt.plot(robot_x_lst, label='x')
         plt.plot(robot_y_lst, label='y')
         plt.plot(robot_z_lst, label='z')

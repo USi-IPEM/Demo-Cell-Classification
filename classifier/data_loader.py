@@ -151,32 +151,41 @@ class DataLoader(object):
                 qc_lst.append(float(row.Value))
         
         if len(robot_x_lst) != len(robot_z_lst):
-            print('sync error x', len(robot_x_lst), len(robot_y_lst))
+            print('sync error x', len(robot_x_lst), len(robot_y_lst), sample.use_case, sample.sample_file)
         if len(robot_y_lst) != len(robot_z_lst):
-            print('sync error y', len(robot_y_lst), len(robot_z_lst))
+            print('sync error y', len(robot_y_lst), len(robot_z_lst), sample.use_case, sample.sample_file)
         z_val = np.nan
         x_val = np.nan
         y_val = np.nan
-        for no, z in enumerate(robot_z_lst):
+        # for no, z in enumerate(robot_z_lst):
             # drop!
             # rob_x < 1050000000
             # rob_y > 3100000000
             # rob_z < 1052000000 and rob_z > 1051200000
 
 
-            if int(z) < 1052000000:
-                try:
-                    x = robot_x_lst[no] 
-                    y = robot_y_lst[no]
-                    if (int(x) < 1050000000) and (int(y) > 3100000000):
+            # if int(z) < 1052000000:
+                # try:
+                    # x = robot_x_lst[no] 
+                    # y = robot_y_lst[no]
+                    # if (int(x) < 1050000000) and (int(y) > 3100000000):
                         # drop
-                        z_val = int(z)
-                        x_val = int(robot_x_lst[no])
-                        y_val = int(robot_z_lst[no])
-                        break
-                except Exception as inst:
-                    print('x, y arm coordinates missing.',
-                          sample.use_case, sample.sample_file)
+                        # z_val = int(z)
+                        # x_val = int(robot_x_lst[no])
+                        # y_val = int(robot_z_lst[no])
+                        # break
+                # except Exception as inst:
+                    # print('x, y arm coordinates missing.',
+                        #   sample.use_case, sample.sample_file)
+        
+        for no, z in enumerate(robot_z_lst):
+            if int(z) < 1052000000:
+                # drop
+                z_val = int(z)
+                x_val = int(robot_x_lst[no])
+                y_val = int(robot_z_lst[no])
+                break
+
 
         conv1_array = np.array(conv1_lst)
         conv2_array = np.array(conv2_lst)
