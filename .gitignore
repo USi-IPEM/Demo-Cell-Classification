@@ -139,4 +139,4 @@ cython_debug/
 
 # prz Machine
 
-settings.json
+*.json
