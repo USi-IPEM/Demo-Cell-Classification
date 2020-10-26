@@ -27,3 +27,14 @@ Conveyor Belt:
   
   Higher the number, faster the speed. The range goes from 300 to 950 in values.
 
+Flag:
+-----
+
+- 560: Flag_grip
+  - 0: Open
+  - 1: Close
+- 561: Flag_pos (position of robot based in certain conditions)
+  - 0: Black disk in store
+  - 1: Black disk in gate
+  - 2: White disk in store
+  - 3: White disk in gate
