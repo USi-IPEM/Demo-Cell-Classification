@@ -128,11 +128,8 @@ class DataLoader(object):
  
  
 if __name__ == '__main__':
-    path_lst = ['../01_Data/200924/use_case1/Processed/Samples/',
-                '../01_Data/200924/use_case2/Processed/Samples/',
-                '../01_Data/200924/use_case3/Processed/Samples/',
-                '../01_Data/200924/use_case4/Processed/Samples/',
-                '../01_Data/200924/use_case5/Processed/Samples/']
+    path_lst = ['../01_Data/201026/use_case1/Processed/Samples/',
+                ]
 
     # os.chdir(os.path.dirname(__file__))
     # print(os.getcwd())
