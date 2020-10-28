@@ -117,8 +117,11 @@ class DataLoader(object):
         print(sample.use_case)
         print(sample.sample_file)
         plt.title(sample.use_case + '_' + sample.sample_file)
+        plt.subplot(311)
         plt.plot(robot_x_lst, label='x')
+        plt.subplot(312)
         plt.plot(robot_y_lst, label='y')
+        plt.subplot(313)
         plt.plot(robot_z_lst, label='z')
         plt.legend()
         plt.show()
@@ -128,7 +131,7 @@ class DataLoader(object):
  
  
 if __name__ == '__main__':
-    path_lst = ['../01_Data/201027/use_case1/Processed/Samples/',
+    path_lst = ['./01_Data/201027/use_case1/Processed/Samples/',
                 ]
 
     # os.chdir(os.path.dirname(__file__))
