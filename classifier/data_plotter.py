@@ -131,7 +131,7 @@ class DataLoader(object):
  
  
 if __name__ == '__main__':
-    path_lst = ['./01_Data/201027/use_case1/Processed/Samples/',
+    path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
                 ]
 
     # os.chdir(os.path.dirname(__file__))
