@@ -30,10 +30,10 @@ Conveyor Belt:
 Flag:
 -----
 
-- 560: Flag_grip
+- 561: Flag_grip
   - 0: Open
   - 1: Close
-- 561: Flag_pos (position of robot based in certain conditions)
+- 560: Flag_pos (position of robot based in certain conditions)
   - 0: Black disk in store
   - 1: Black disk in gate
   - 2: White disk in store
