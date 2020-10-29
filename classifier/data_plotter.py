@@ -1,6 +1,7 @@
 import os
 import pandas
 import numpy as np
+from datetime import datetime
 from random import shuffle
 from collections import namedtuple
 import matplotlib.pyplot as plt
@@ -90,43 +91,87 @@ class DataLoader(object):
         conv2_lst = []
         conv3_lst = []
         qc_lst = []
+        grip_lst = []
+        pos_lst = []
+
+        def extract_value_and_time(row) -> (np.array, np.array):
+            # Extract a value and its time of measurement from a dataframe.
+            if row.ServerTimeStamp is np.nan:
+                measurement_time = np.datetime64('NaT') # Not a Time
+            else:
+                measurement_time = np.datetime64(datetime.strptime(row.ServerTimeStamp, '%Y-%m-%d %H:%M:%S.%f%z'))
+
+            if row.Value == 'true':
+                measurement_value = 1.0
+            elif row.Value == 'false':
+                measurement_value = 0.0
+            else:
+                measurement_value = np.array(float(row.Value))
+
+            return (measurement_value,
+                    measurement_time.astype("float"))
+
+        def normalize(array: np.array) -> np.array:
+            # normalize the input array first channel.
+            array[:, 0] = (array[:, 0] - np.mean(array[:, 0]))/np.std(array[:, 0])
+            return array
+
         for row in raw_data.itertuples():
             # current_row = raw_data[row_no, :]
             if row.PrimaryKey == '527':
                 # 527_x: Robot position in x.
-                robot_x_lst.append(float(row.Value))
+                robot_x_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == '528':
                 # 528_y: Robot position in y.
-                robot_y_lst.append(float(row.Value))
+                robot_y_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == '529':
                 # 529_z: Robot position in z.
-                robot_z_lst.append(float(row.Value))
+                robot_z_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == '27':
                 # belt1 data.
-                conv1_lst.append(float(row.Value))
+                conv1_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == '28':
                 # belt2 data.
-                conv2_lst.append(float(row.Value))
+                conv2_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == '29':
                 # belt3 data.
-                conv3_lst.append(float(row.Value))
+                conv3_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == 'ResultCode':
-                qc_lst.append(float(row.Value))
-        
+                qc_lst.append(extract_value_and_time(row))
+            if row.PrimaryKey == '561':
+                # Position indicator
+                grip_lst.append(extract_value_and_time(row))
+            if row.PrimaryKey == '560':
+                # Grip indicator.
+                pos_lst.append(extract_value_and_time(row))
+
+        x_array = normalize(np.stack(robot_x_lst))
+        y_array = normalize(np.stack(robot_y_lst))
+        z_array = normalize(np.stack(robot_z_lst))
+
+        belt1_array = np.stack(conv1_lst)
+        belt2_array = np.stack(conv2_lst)
+        belt3_array = np.stack(conv3_lst)
+
+        grip_array = np.stack(grip_lst)
+        pos_array = np.stack(pos_lst)
+        qc_array = np.stack(qc_lst)
+
+        plt.title(sample.use_case + '_' + sample.sample_file)
+        plt.plot(x_array[:, 1], x_array[:, 0], label='rob x')
+        plt.plot(y_array[:, 1], y_array[:, 0], label='rob y')
+        plt.plot(z_array[:, 1], z_array[:, 0], label='rob z')
+        plt.plot(grip_array[:, 1], grip_array[:, 0], label='grip')
+        plt.plot(pos_array[:, 1], pos_array[:, 0], label='pos')
+        plt.plot(qc_array[:, 1], qc_array[:, 0], label='qc')
+        plt.plot()
+        plt.legend()
+        plt.show()
+
         # plot the sample
         print(sample.use_case)
         print(sample.sample_file)
-        plt.title(sample.use_case + '_' + sample.sample_file)
-        plt.subplot(311)
-        plt.plot(robot_x_lst, label='x')
-        plt.subplot(312)
-        plt.plot(robot_y_lst, label='y')
-        plt.subplot(313)
-        plt.plot(robot_z_lst, label='z')
-        plt.legend()
-        plt.show()
  
-        input('press any key to continue.')
  
  
  
