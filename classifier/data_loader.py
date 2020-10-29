@@ -14,7 +14,7 @@ CellSample = namedtuple('CellSample',
                          'x', 'y'])
 
 class DataLoader(object):
-    """ Load the demo-cell data. """
+    """ Load the demo-cell data. Base class for vector and sequence loaders. """
 
     def __init__(self, case_path_lst: list, debug: bool=False,
                  test_size: int=20, seed: int=1):
@@ -46,23 +46,6 @@ class DataLoader(object):
         print('baseline:',
               '%.1f' % ((1. - np.sum(self.y_array)/self.y_array.shape[0])*100),
               '%')
-
-
-    def write_xy_vectors_to_file(self, path='./input/'):
-        """Write the svm input into a csv file.
-        Args:
-            path (str, optional): [description]. Defaults to './input/'.
-        """        
-        pandas.DataFrame(data=self.x_array,
-                         columns=['drop_black_pos_y',
-                                  'drop_black_pos_z',
-                                  'drop_black_pos_x',
-                                  'drop_white_pos_x',
-                                  'drop_white_pos_y',
-                                  'drop_white_pos_z',
-                                  'max_belt']).to_csv(path + 'x.csv')
-        pandas.DataFrame(data=self.y_array,
-                         columns=['quality']).to_csv(path + 'y.csv')
 
     def get_train_xy(self):
         """ Returns the training data vectors.
@@ -138,16 +121,17 @@ class DataLoader(object):
         for sample in self.raw_sample_list:
             try:
                 x, y = self._process_table(sample)        
+                self.sample_list.append(CellSample(use_case=sample.use_case,
+                                                sample_file=sample.sample_file,
+                                                raw_data=sample.raw_data,
+                                                x=x,
+                                                y=y))
             except Exception as e:
                 print('skipping', sample.use_case, sample.sample_file, e)
 
-            self.sample_list.append(CellSample(use_case=sample.use_case,
-                                               sample_file=sample.sample_file,
-                                               raw_data=sample.raw_data,
-                                               x=x,
-                                               y=y))
 
-    def _process_table(self, sample):
+
+    def _load_table(self, sample):
         """ Extrat the input x and target y values from the current
             data frame"""
  
@@ -181,11 +165,6 @@ class DataLoader(object):
             return (measurement_value,
                     measurement_time.astype("float"))
 
-        def _normalize(array: np.array) -> np.array:
-            # Normalize the input array first channel.
-            array[:, 0] = (array[:, 0] - np.mean(array[:, 0]))/(np.std(array[:, 0]) + 0.000001)
-            return array
-
         for row in raw_data.itertuples():
             # current_row = raw_data[row_no, :]
             if row.PrimaryKey == '527':
@@ -215,23 +194,45 @@ class DataLoader(object):
                 # Grip indicator.
                 pos_lst.append(extract_value_and_time(row))
 
-        x_array = _normalize(np.stack(robot_x_lst))
-        y_array = _normalize(np.stack(robot_y_lst))
-        z_array = _normalize(np.stack(robot_z_lst))
+        return robot_x_lst, robot_y_lst, robot_z_lst, \
+               conv1_lst, conv2_lst, conv3_lst, \
+               qc_lst, grip_lst, pos_lst
 
 
-        def _process_belt_data(lst: list) -> np.array:
-            # insert a zero placeholder for missing belt data.
-            if lst:
-                return np.stack(lst)
-            else:
-                print('Warning belt array empty.',
-                      sample.use_case, sample.sample_file)
-                return np.zeros((1, 2))
-           
-        belt1_array = _normalize(_process_belt_data(conv1_lst))
-        belt2_array = _normalize(_process_belt_data(conv2_lst))
-        belt3_array = _normalize(_process_belt_data(conv3_lst))
+    def _normalize(self, array: np.array) -> np.array:
+            # Normalize the input array first channel.
+            array[:, 0] = (array[:, 0] - np.mean(array[:, 0]))/(np.std(array[:, 0]) + 0.000001)
+            return array
+
+    def _process_table(self, sample):
+        # Implemented in Child classes Vector
+        # or Sequence Loader.
+        raise NotImplementedError
+
+    def _process_belt_data(self, lst: list, sample) -> np.array:
+        # insert a zero placeholder for missing belt data.
+        if lst:
+            return np.stack(lst)
+        else:
+            print('Warning belt array empty.',
+                  sample.use_case, sample.sample_file)
+            return np.zeros((1, 2))
+
+
+class VectorLoader(DataLoader):
+
+    def _process_table(self, sample):
+        robot_x_lst, robot_y_lst, robot_z_lst, \
+            conv1_lst, conv2_lst, conv3_lst, \
+            qc_lst, grip_lst, pos_lst = self._load_table(sample)
+
+        x_array = self._normalize(np.stack(robot_x_lst))
+        y_array = self._normalize(np.stack(robot_y_lst))
+        z_array = self._normalize(np.stack(robot_z_lst))
+
+        belt1_array = self._normalize(self._process_belt_data(conv1_lst, sample))
+        belt2_array = self._normalize(self._process_belt_data(conv2_lst, sample))
+        belt3_array = self._normalize(self._process_belt_data(conv3_lst, sample))
 
         grip_array = np.stack(grip_lst)
         pos_array = np.stack(pos_lst)
@@ -242,8 +243,6 @@ class DataLoader(object):
         drop_black_time = grip_array[1, 1]
         drop_white_time = grip_array[-1, 1]
         
-
-
         # compute drop position black
         drop_black_pos_x = np.interp(x=drop_black_time,
                                      xp=x_array[:, 1],
@@ -310,6 +309,64 @@ class DataLoader(object):
         # print(qc_lst)
         return x, y
 
+    def write_xy_vectors_to_file(self, path='./input/'):
+        """Write the svm input into a csv file.
+        Args:
+            path (str, optional): [description]. Defaults to './input/'.
+        """        
+        pandas.DataFrame(data=self.x_array,
+                         columns=['drop_black_pos_y',
+                                  'drop_black_pos_z',
+                                  'drop_black_pos_x',
+                                  'drop_white_pos_x',
+                                  'drop_white_pos_y',
+                                  'drop_white_pos_z',
+                                  'max_belt']).to_csv(path + 'x.csv')
+        pandas.DataFrame(data=self.y_array,
+                         columns=['quality']).to_csv(path + 'y.csv')
+
+
+class SequenceLoader(DataLoader):
+
+    def _process_table(self, sample):
+        robot_x_lst, robot_y_lst, robot_z_lst, \
+            conv1_lst, conv2_lst, conv3_lst, \
+            qc_lst, grip_lst, pos_lst = self._load_table(sample)
+        
+        x_array = self._normalize(np.stack(robot_x_lst))
+        y_array = self._normalize(np.stack(robot_y_lst))
+        z_array = self._normalize(np.stack(robot_z_lst))
+
+        # interpolate y and z to the sampling points of x.
+        y_array = np.interp(x=x_array[:100, 1],
+                            xp=y_array[:, 1],
+                            fp=y_array[:, 0])
+        z_array = np.interp(x=x_array[:100, 1],
+                            xp=z_array[:, 1],
+                            fp=z_array[:, 0])
+        x_array = x_array[:100, 0]
+        belt1_array = self._normalize(self._process_belt_data(conv1_lst, sample))
+        belt2_array = self._normalize(self._process_belt_data(conv2_lst, sample))
+        belt3_array = self._normalize(self._process_belt_data(conv3_lst, sample))
+
+        assert belt1_array.shape[0] == 1, 'belt1 not scalar.'
+        assert belt2_array.shape[0] == 1, 'belt2 not scalar.'
+        assert belt3_array.shape[0] == 1, 'belt3 not scalar.'
+        belt1_array = np.ones_like(x_array)*belt1_array[0, 0]
+        belt2_array = np.ones_like(x_array)*belt2_array[0, 0]
+        belt3_array = np.ones_like(x_array)*belt3_array[0, 0]
+
+        grip_array = np.stack(grip_lst)
+        pos_array = np.stack(pos_lst)
+        qc_array = np.stack(qc_lst)
+
+        x_in = np.stack([x_array, y_array, z_array,
+                         belt1_array, belt2_array, belt3_array], axis=-1)
+        y_in = np.array(qc_array[-1, 0])
+
+        # blow up the smaller arrays to match the rest in size.
+        # print('stop', belt1_array.shape)
+        return x_in, y_in
 
 if __name__ == '__main__':
     path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
@@ -319,9 +376,10 @@ if __name__ == '__main__':
     # print(os.getcwd())
 
     # uncommenting this line will show data plots.
-    demo_cell_data = DataLoader(case_path_lst=path_lst, debug=True)
+    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
+    # sequence_data = SequenceLoader(case_path_lst=path_lst)
 
-    # demo_cell_data = DataLoader(case_path_lst=path_lst, debug=False)
+    # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
 
     # uncomment to write new file.
     # demo_cell_data.write_xy_vectors_to_file()

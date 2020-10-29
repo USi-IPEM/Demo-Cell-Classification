@@ -2,7 +2,7 @@
 import os
 import numpy as np
 from sklearn import svm
-from data_loader import DataLoader
+from data_loader import VectorLoader
 
 
 path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
@@ -12,7 +12,7 @@ path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
 # os.chdir(os.path.dirname(__file__))
 # print(os.getcwd())
 
-demo_cell_data = DataLoader(case_path_lst=path_lst, debug=False)
+demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
 X_train, y_train = demo_cell_data.get_train_xy()
 
 clf = svm.SVC(gamma='auto')
