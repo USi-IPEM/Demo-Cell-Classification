@@ -4,16 +4,14 @@ from sklearn import svm
 from data_loader import DataLoader
 
 
-path_lst = ['../01_Data/200924/use_case1/Processed/Samples/',
-            '../01_Data/200924/use_case2/Processed/Samples/',
-            '../01_Data/200924/use_case3/Processed/Samples/',
-            '../01_Data/200924/use_case4/Processed/Samples/',
-            '../01_Data/200924/use_case5/Processed/Samples/']
+path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
+            './01_Data/201027/use_case1/Processed/Samples/']
+
 
 # os.chdir(os.path.dirname(__file__))
 # print(os.getcwd())
 
-demo_cell_data = DataLoader(case_path_lst=path_lst, debug=True)
+demo_cell_data = DataLoader(case_path_lst=path_lst, debug=False)
 X_train, y_train = demo_cell_data.get_train_xy()
 
 clf = svm.SVC(gamma='auto')
