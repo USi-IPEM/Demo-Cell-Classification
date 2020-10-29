@@ -1,3 +1,4 @@
+# Train an svm classifier on the demo cell data.
 import os
 import numpy as np
 from sklearn import svm

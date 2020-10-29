@@ -1,8 +1,9 @@
+# This module loads the demo cell data.
 import os
 import pandas
 import numpy as np
 from datetime import datetime
-from random import shuffle
+from random import shuffle, seed
 from collections import namedtuple
 import matplotlib.pyplot as plt
 
@@ -15,13 +16,17 @@ CellSample = namedtuple('CellSample',
 class DataLoader(object):
     """ Load the demo-cell data. """
 
-    def __init__(self, case_path_lst: list, debug: bool=False, test_size: int=20):
+    def __init__(self, case_path_lst: list, debug: bool=False,
+                 test_size: int=20, seed: int=1):
         """ Creat a data loader object for the demo cell.
 
         Args:
             case_path_lst (list): List of use case measurements to use.
             debug (bool): Shows plots of the data if True. 
+            test_size (int): Number of samples set aside for testing.
+            seed (int): Initial seed for the random number generator.
         """
+        self.seed = seed
         self.debug = debug
         self.test_size = test_size
         self.case_path_lst = case_path_lst
@@ -38,10 +43,16 @@ class DataLoader(object):
         self._create_data_array()
         # self._preprocess()
         self._split()
-        print('baseline:', 1. - np.sum(self.y_array)/self.y_array.shape[0])
+        print('baseline:',
+              '%.1f' % ((1. - np.sum(self.y_array)/self.y_array.shape[0])*100),
+              '%')
 
 
     def write_xy_vectors_to_file(self, path='./input/'):
+        """Write the svm input into a csv file.
+        Args:
+            path (str, optional): [description]. Defaults to './input/'.
+        """        
         pandas.DataFrame(data=self.x_array,
                          columns=['drop_black_pos_y',
                                   'drop_black_pos_z',
@@ -54,19 +65,22 @@ class DataLoader(object):
                          columns=['quality']).to_csv(path + 'y.csv')
 
     def get_train_xy(self):
+        """ Returns the training data vectors.
+
+        Returns:
+            x [np.array]: Input vectors.
+            y [np.array]: Target vectors.
+        """        
         return self.x_train, self.y_train
 
     def get_test_xy(self):
-        return self.x_test, self.y_test
+        """ Returns the test data vectors.
 
-    def _preprocess(self):
-        """ Create zero mean and unit std data. """
-        x_mean = np.mean(self.x_array, axis=0)
-        x_std = np.std(self.x_array, axis=0)
-        self.x_array = self.x_array - np.expand_dims(x_mean, 0)
-        self.x_array = self.x_array / x_std
-        print('mean', np.mean(self.x_array, 0))
-        print('std', np.std(self.x_array, 0))
+        Returns:
+            x [np.array]: Input vectors.
+            y [np.array]: Target vectors.
+        """        
+        return self.x_test, self.y_test
 
     def _split(self):
         """ Split into train and test data."""
@@ -76,10 +90,8 @@ class DataLoader(object):
         self.y_train = self.y_array[:-self.test_size]
         self.y_test = self.y_array[(samples-self.test_size):]
 
-
     def _create_data_array(self):
-        """ Create and shuffle an array with all samples.
-        """
+        """ Create and shuffle an array with all samples. """
         x = []
         y = []
         for sample in self.sample_list:
@@ -93,6 +105,8 @@ class DataLoader(object):
         x_rnd = []
         y_rnd = []
         index_rnd = list(range(len(x)))
+        # Seed the numpy generator to ensure reproducible results.
+        seed(self.seed)
         shuffle(index_rnd)
         for i in index_rnd:
             x_rnd.append(x[i])
@@ -133,7 +147,6 @@ class DataLoader(object):
                                                x=x,
                                                y=y))
 
-
     def _process_table(self, sample):
         """ Extrat the input x and target y values from the current
             data frame"""
@@ -168,8 +181,8 @@ class DataLoader(object):
             return (measurement_value,
                     measurement_time.astype("float"))
 
-        def normalize(array: np.array) -> np.array:
-            # normalize the input array first channel.
+        def _normalize(array: np.array) -> np.array:
+            # Normalize the input array first channel.
             array[:, 0] = (array[:, 0] - np.mean(array[:, 0]))/(np.std(array[:, 0]) + 0.000001)
             return array
 
@@ -202,12 +215,12 @@ class DataLoader(object):
                 # Grip indicator.
                 pos_lst.append(extract_value_and_time(row))
 
-        x_array = normalize(np.stack(robot_x_lst))
-        y_array = normalize(np.stack(robot_y_lst))
-        z_array = normalize(np.stack(robot_z_lst))
+        x_array = _normalize(np.stack(robot_x_lst))
+        y_array = _normalize(np.stack(robot_y_lst))
+        z_array = _normalize(np.stack(robot_z_lst))
 
 
-        def process_belt_data(lst: list) -> np.array:
+        def _process_belt_data(lst: list) -> np.array:
             # insert a zero placeholder for missing belt data.
             if lst:
                 return np.stack(lst)
@@ -216,9 +229,9 @@ class DataLoader(object):
                       sample.use_case, sample.sample_file)
                 return np.zeros((1, 2))
            
-        belt1_array = normalize(process_belt_data(conv1_lst))
-        belt2_array = normalize(process_belt_data(conv2_lst))
-        belt3_array = normalize(process_belt_data(conv3_lst))
+        belt1_array = _normalize(_process_belt_data(conv1_lst))
+        belt2_array = _normalize(_process_belt_data(conv2_lst))
+        belt3_array = _normalize(_process_belt_data(conv3_lst))
 
         grip_array = np.stack(grip_lst)
         pos_array = np.stack(pos_lst)
@@ -306,9 +319,9 @@ if __name__ == '__main__':
     # print(os.getcwd())
 
     # uncommenting this line will show data plots.
-    # demo_cell_data = DataLoader(case_path_lst=path_lst, debug=True)
+    demo_cell_data = DataLoader(case_path_lst=path_lst, debug=True)
 
-    demo_cell_data = DataLoader(case_path_lst=path_lst, debug=False)
+    # demo_cell_data = DataLoader(case_path_lst=path_lst, debug=False)
 
     # uncomment to write new file.
     # demo_cell_data.write_xy_vectors_to_file()
