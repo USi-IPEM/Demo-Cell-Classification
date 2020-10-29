@@ -38,3 +38,33 @@ Flag:
   - 1: Black disk in gate
   - 2: White disk in store
   - 3: White disk in gate
+
+
+Vector approach
+-----------
+
+Input:
+  - Drop arm position for white and black discs.
+  - Max raw conveyor "speed" value.
+
+Output:
+ - Last qc entry in each file.
+ - Quality control float (regression) / bool (classification).
+
+Required data:
+ - Iris data set ~150.
+
+Sequence approach
+-------------
+
+Input:
+  - Complete arm pos sequences.
+  - Complete belt speed sequences.
+  
+
+Output:
+ - Quality control float (regression) / bool (classification).
+ 
+Required data (Problem!):
+ - RNNs models in the literature use weeks/months of data.
+
