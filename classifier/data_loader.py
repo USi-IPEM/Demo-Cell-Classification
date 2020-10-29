@@ -15,7 +15,7 @@ CellSample = namedtuple('CellSample',
 class DataLoader(object):
     """ Load the demo-cell data. """
 
-    def __init__(self, case_path_lst: list, debug: bool=False, test_size=20):
+    def __init__(self, case_path_lst: list, debug: bool=False, test_size: int=20):
         """ Creat a data loader object for the demo cell.
 
         Args:
@@ -23,7 +23,7 @@ class DataLoader(object):
             debug (bool): Shows plots of the data if True. 
         """
         self.debug = debug
-        self.test_size = 20
+        self.test_size = test_size
         self.case_path_lst = case_path_lst
         self.raw_sample_list = []
         self.sample_list = []
@@ -39,6 +39,19 @@ class DataLoader(object):
         # self._preprocess()
         self._split()
         print('baseline:', 1. - np.sum(self.y_array)/self.y_array.shape[0])
+
+
+    def write_xy_vectors_to_file(self, path='./input/'):
+        pandas.DataFrame(data=self.x_array,
+                         columns=['drop_black_pos_y',
+                                  'drop_black_pos_z',
+                                  'drop_black_pos_x',
+                                  'drop_white_pos_x',
+                                  'drop_white_pos_y',
+                                  'drop_white_pos_z',
+                                  'max_belt']).to_csv(path + 'x.csv')
+        pandas.DataFrame(data=self.y_array,
+                         columns=['quality']).to_csv(path + 'y.csv')
 
     def get_train_xy(self):
         return self.x_train, self.y_train
@@ -296,3 +309,6 @@ if __name__ == '__main__':
     # demo_cell_data = DataLoader(case_path_lst=path_lst, debug=True)
 
     demo_cell_data = DataLoader(case_path_lst=path_lst, debug=False)
+
+    # uncomment to write new file.
+    # demo_cell_data.write_xy_vectors_to_file()
