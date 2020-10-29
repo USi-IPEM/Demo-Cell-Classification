@@ -109,7 +109,11 @@ class DataLoader(object):
         """ Create the input x and target y for the machine learning
             optimization. """
         for sample in self.raw_sample_list:
-            x, y = self._process_table(sample)        
+            try:
+                x, y = self._process_table(sample)        
+            except Exception as e:
+                print('skipping', sample.use_case, sample.sample_file, e)
+
             self.sample_list.append(CellSample(use_case=sample.use_case,
                                                sample_file=sample.sample_file,
                                                raw_data=sample.raw_data,
@@ -190,15 +194,15 @@ class DataLoader(object):
         z_array = normalize(np.stack(robot_z_lst))
 
 
-        def process_belt_data(conv_lst: list) -> np.array:
+        def process_belt_data(lst: list) -> np.array:
             # insert a zero placeholder for missing belt data.
-            if conv1_lst:
-                return np.stack(conv_lst)
+            if lst:
+                return np.stack(lst)
             else:
-                print('Warning belt array empty.')
+                print('Warning belt array empty.',
+                      sample.use_case, sample.sample_file)
                 return np.zeros((1, 2))
            
-
         belt1_array = normalize(process_belt_data(conv1_lst))
         belt2_array = normalize(process_belt_data(conv2_lst))
         belt3_array = normalize(process_belt_data(conv3_lst))
