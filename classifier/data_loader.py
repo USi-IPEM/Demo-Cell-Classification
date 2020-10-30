@@ -376,7 +376,7 @@ if __name__ == '__main__':
     # print(os.getcwd())
 
     # uncommenting this line will show data plots.
-    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
+    #demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
     # sequence_data = SequenceLoader(case_path_lst=path_lst)
 
     # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
