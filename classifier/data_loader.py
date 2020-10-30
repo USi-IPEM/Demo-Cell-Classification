@@ -238,22 +238,12 @@ class VectorLoader(DataLoader):
         pos_array = np.stack(pos_lst)
         qc_array = np.stack(qc_lst)
 
-        #drop_black_time = pos_array[1, 1]
-        #drop_white_time = pos_array[-1, 1]
-        drop_black_time = grip_array[1, 1]
-        drop_white_time = grip_array[-1, 1]
+        #drop_white_time = pos_array[1, 1]
+        #drop_black_time = pos_array[-1, 1]
+        drop_white_time = grip_array[1, 1]
+        drop_black_time = grip_array[-1, 1]
         
         # compute drop position black
-        drop_black_pos_x = np.interp(x=drop_black_time,
-                                     xp=x_array[:, 1],
-                                     fp=x_array[:, 0])
-        drop_black_pos_y = np.interp(x=drop_black_time,
-                                     xp=y_array[:, 1],
-                                     fp=y_array[:, 0])
-        drop_black_pos_z = np.interp(x=drop_black_time,
-                                     xp=z_array[:, 1],
-                                     fp=z_array[:, 0])
-        # compute drop position white
         drop_white_pos_x = np.interp(x=drop_white_time,
                                      xp=x_array[:, 1],
                                      fp=x_array[:, 0])
@@ -261,6 +251,16 @@ class VectorLoader(DataLoader):
                                      xp=y_array[:, 1],
                                      fp=y_array[:, 0])
         drop_white_pos_z = np.interp(x=drop_white_time,
+                                     xp=z_array[:, 1],
+                                     fp=z_array[:, 0])
+        # compute drop position white
+        drop_black_pos_x = np.interp(x=drop_black_time,
+                                     xp=x_array[:, 1],
+                                     fp=x_array[:, 0])
+        drop_black_pos_y = np.interp(x=drop_black_time,
+                                     xp=y_array[:, 1],
+                                     fp=y_array[:, 0])
+        drop_black_pos_z = np.interp(x=drop_black_time,
                                      xp=z_array[:, 1],
                                      fp=z_array[:, 0])
 
@@ -273,12 +273,12 @@ class VectorLoader(DataLoader):
             plt.plot(grip_array[:, 1], grip_array[:, 0], label='grip')
             plt.plot(pos_array[:, 1], pos_array[:, 0], label='pos')
             plt.plot(qc_array[:, 1], qc_array[:, 0], label='qc')
-            plt.plot(drop_black_time, drop_black_pos_y, '.', label='drop by')
-            plt.plot(drop_black_time, drop_black_pos_z, '.', label='drop bz')
-            plt.plot(drop_black_time, drop_black_pos_x, '.', label='drop bx')
-            plt.plot(drop_white_time, drop_white_pos_x, '.', label='drop wx')
             plt.plot(drop_white_time, drop_white_pos_y, '.', label='drop wy')
             plt.plot(drop_white_time, drop_white_pos_z, '.', label='drop wz')
+            plt.plot(drop_white_time, drop_white_pos_x, '.', label='drop wx')
+            plt.plot(drop_black_time, drop_black_pos_x, '.', label='drop bx')
+            plt.plot(drop_black_time, drop_black_pos_y, '.', label='drop by')
+            plt.plot(drop_black_time, drop_black_pos_z, '.', label='drop bz')
             plt.legend()
             plt.show()
 
@@ -296,12 +296,12 @@ class VectorLoader(DataLoader):
                            np.max(belt2_array[:, 0]),
                            np.max(belt3_array[:, 0])))
  
-        x = np.array([drop_black_pos_y,
-                      drop_black_pos_z,
-                      drop_black_pos_x,
-                      drop_white_pos_x,
-                      drop_white_pos_y,
+        x = np.array([drop_white_pos_y,
                       drop_white_pos_z,
+                      drop_white_pos_x,
+                      drop_black_pos_x,
+                      drop_black_pos_y,
+                      drop_black_pos_z,
                       max_belt])
         
         # the last recorded qc value counts.
@@ -315,12 +315,12 @@ class VectorLoader(DataLoader):
             path (str, optional): [description]. Defaults to './input/'.
         """        
         pandas.DataFrame(data=self.x_array,
-                         columns=['drop_black_pos_y',
-                                  'drop_black_pos_z',
-                                  'drop_black_pos_x',
-                                  'drop_white_pos_x',
-                                  'drop_white_pos_y',
+                         columns=['drop_white_pos_y',
                                   'drop_white_pos_z',
+                                  'drop_white_pos_x',
+                                  'drop_black_pos_x',
+                                  'drop_black_pos_y',
+                                  'drop_black_pos_z',
                                   'max_belt']).to_csv(path + 'x.csv')
         pandas.DataFrame(data=self.y_array,
                          columns=['quality']).to_csv(path + 'y.csv')
@@ -376,7 +376,7 @@ if __name__ == '__main__':
     # print(os.getcwd())
 
     # uncommenting this line will show data plots.
-    #demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
+    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
     # sequence_data = SequenceLoader(case_path_lst=path_lst)
 
     # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
