@@ -370,13 +370,19 @@ class SequenceLoader(DataLoader):
 
 if __name__ == '__main__':
     path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
-                './01_Data/201027/use_case1/Processed/Samples/']
+                './01_Data/201027/use_case1/Processed/Samples/',
+                './01_Data/201030/use_case1/Processed/Samples/',
+                './01_Data/201030/use_case2/Processed/Samples/',
+                './01_Data/201030/use_case3/Processed/Samples/',
+                './01_Data/201030/use_case4/Processed/Samples/',
+                './01_Data/201030/use_case5/Processed/Samples/',
+                './01_Data/201030/use_case6/Processed/Samples/']
 
     # os.chdir(os.path.dirname(__file__))
     # print(os.getcwd())
 
     # uncommenting this line will show data plots.
-    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
+    #demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
     # sequence_data = SequenceLoader(case_path_lst=path_lst)
 
     # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)

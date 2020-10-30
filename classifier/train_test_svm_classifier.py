@@ -6,7 +6,13 @@ from data_loader import VectorLoader
 
 
 path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
-            './01_Data/201027/use_case1/Processed/Samples/']
+            './01_Data/201027/use_case1/Processed/Samples/',
+            './01_Data/201030/use_case1/Processed/Samples/',
+            './01_Data/201030/use_case2/Processed/Samples/',
+            './01_Data/201030/use_case3/Processed/Samples/',
+            './01_Data/201030/use_case4/Processed/Samples/',
+            './01_Data/201030/use_case5/Processed/Samples/',
+            './01_Data/201030/use_case6/Processed/Samples/']
 
 
 # os.chdir(os.path.dirname(__file__))
