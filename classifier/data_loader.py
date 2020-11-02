@@ -8,7 +8,8 @@ from collections import namedtuple
 import matplotlib.pyplot as plt
 
 CellSample = namedtuple('CellSample',
-                        ['use_case',
+                        ['date',
+                         'use_case',
                          'sample_file',
                          'raw_data',
                          'x', 'y'])
@@ -107,9 +108,11 @@ class DataLoader(object):
             for root, dirs, files in os.walk(path):
                 for current_file in files:
                     pandas_file = pandas.read_csv(root + current_file)
+                    date = path.split('/')[2]
                     use_case = path.split('/')[3]
                     sample_file = current_file
                     sample_list.append(CellSample(use_case=use_case,
+                                                  date=date,
                                                   sample_file=sample_file,
                                                   raw_data=pandas_file,
                                                   x=None, y=None))
@@ -123,13 +126,12 @@ class DataLoader(object):
                 x, y = self._process_table(sample)        
                 self.sample_list.append(CellSample(use_case=sample.use_case,
                                                 sample_file=sample.sample_file,
+                                                date=sample.date,
                                                 raw_data=sample.raw_data,
                                                 x=x,
                                                 y=y))
             except Exception as e:
                 print('skipping', sample.use_case, sample.sample_file, e)
-
-
 
     def _load_table(self, sample):
         """ Extrat the input x and target y values from the current
@@ -186,6 +188,10 @@ class DataLoader(object):
                 # belt3 data.
                 conv3_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == 'ResultCode':
+                val = extract_value_and_time(row)
+                # import pdb; pdb.set_trace()
+                # if val[0] > 1:
+                #    print('qc > 1', sample.date, sample.use_case, sample.sample_file)
                 qc_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == '561':
                 # Position indicator
@@ -215,7 +221,7 @@ class DataLoader(object):
             return np.stack(lst)
         else:
             print('Warning belt array empty.',
-                  sample.use_case, sample.sample_file)
+                  sample.date, sample.use_case, sample.sample_file)
             return np.zeros((1, 2))
 
 
@@ -288,6 +294,7 @@ class VectorLoader(DataLoader):
             plt.plot(belt3_array[:, 1], belt3_array[:, 0], '.', label='belt3')
             plt.show()
 
+            print(sample.date)
             print(sample.use_case)
             print(sample.sample_file)
 
@@ -382,10 +389,10 @@ if __name__ == '__main__':
     # print(os.getcwd())
 
     # uncommenting this line will show data plots.
-    #demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
+    # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
     # sequence_data = SequenceLoader(case_path_lst=path_lst)
 
-    # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
+    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
 
     # uncomment to write new file.
     # demo_cell_data.write_xy_vectors_to_file()
