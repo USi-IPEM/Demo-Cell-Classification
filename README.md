@@ -4,14 +4,14 @@ In this repository we explore predictive quality control using
 machine learning in an industrial setting as desribed 
 int (TODO: Add paper link here).
 
-The measurements which where used to train and test
+- The measurements which where used to train and test
 the model can be found in the ```01_Data``` folder,
 this folder also outlines the meaning of important
 keys, floats and constants.
 
-Our Preprocessing code is available in ```02_Preprocessing```.
+- Our Preprocessing code is available in ```02_Preprocessing```.
 
-Finally the folder ```classifier``` contains code to train
+- Finally the folder ```classifier``` contains code to train
 and test our models. To reproduce results from the paper run
 ```python classifier/train_test_classifiers.py```.
 
