@@ -10,15 +10,15 @@ shown in the video below:
 Regarding the data which can be found in the 01_Data folder our code
 makes the assumptions documented below.
 
-Quality control
----------------
+###### Quality control
+
 - qc: 
    - Only intereseted in absolute value.
    - Last value per file counts.
    - if < 1.5 mm quality is ok.
 
-Robot:
-------
+###### Robot:
+
 - 527_x: Robot position in x.
 - 528_y: Robot position in y.
 - 529_z: Robot position in z.
@@ -29,8 +29,7 @@ Robot:
 - 531_Ry: Robot rotation in y. Not relevant.
 - 532_Rz: Robot rotation in z. Not relevant.
 
-Conveyor Belt:
---------------
+###### Conveyor Belt:
 - Speed:
   - 27: conv1
   - 28: conv2
@@ -38,8 +37,7 @@ Conveyor Belt:
   
   Higher the number, faster the speed. The range goes from 300 to 950 in values.
 
-Flag:
------
+###### Flag:
 
 - 561: Flag_grip
   - 0: Open
@@ -51,8 +49,7 @@ Flag:
   - 3: White disk in gate
 
 
-Vector approach
------------
+###### Vector approach
 
 Input:
   - Drop arm position for white and black discs.
@@ -65,8 +62,7 @@ Output:
 Required data:
  - Iris data set ~150.
 
-Sequence approach
--------------
+###### Sequence approach (future work)
 
 Input:
   - Complete arm pos sequences.
