@@ -18,7 +18,7 @@ class DataLoader(object):
     """ Load the demo-cell data. Base class for vector and sequence loaders. """
 
     def __init__(self, case_path_lst: list, debug: bool=False,
-                 test_size: int=20, seed: int=1):
+                 test_size: int=20, seed: int=1, full_y: bool=False):
         """ Creat a data loader object for the demo cell.
 
         Args:
@@ -26,7 +26,9 @@ class DataLoader(object):
             debug (bool): Shows plots of the data if True. 
             test_size (int): Number of samples set aside for testing.
             seed (int): Initial seed for the random number generator.
+            full_y (bool): If True construct y using qc and distance values.
         """
+        self.full_y = full_y
         self.seed = seed
         self.debug = debug
         self.test_size = test_size
@@ -44,9 +46,10 @@ class DataLoader(object):
         self._create_data_array()
         # self._preprocess()
         self._split()
-        print('baseline:',
-              '%.1f' % ((1. - np.sum(self.y_array)/self.y_array.shape[0])*100),
-              '%')
+        if not full_y:
+            print('baseline:',
+                  '%.1f' % ((1. - np.sum(self.y_array)/self.y_array.shape[0])*100),
+                  '%')
 
     def get_train_xy(self):
         """ Returns the training data vectors.
@@ -123,7 +126,7 @@ class DataLoader(object):
             optimization. """
         for sample in self.raw_sample_list:
             try:
-                x, y = self._process_table(sample)        
+                x, y = self._process_table(sample, self.full_y)   
                 self.sample_list.append(CellSample(use_case=sample.use_case,
                                                 sample_file=sample.sample_file,
                                                 date=sample.date,
@@ -139,6 +142,7 @@ class DataLoader(object):
  
         raw_data = sample.raw_data
         rows, cols = raw_data.shape
+        # create a list for each value we are parsing.
         robot_x_lst = []
         robot_y_lst = []
         robot_z_lst = []
@@ -146,6 +150,9 @@ class DataLoader(object):
         conv2_lst = []
         conv3_lst = []
         qc_lst = []
+        dx_lst = []
+        dy_lst = []
+        da_lst = []
         grip_lst = []
         pos_lst = []
 
@@ -188,11 +195,13 @@ class DataLoader(object):
                 # belt3 data.
                 conv3_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == 'ResultCode':
-                val = extract_value_and_time(row)
-                # import pdb; pdb.set_trace()
-                # if val[0] > 1:
-                #    print('qc > 1', sample.date, sample.use_case, sample.sample_file)
                 qc_lst.append(extract_value_and_time(row))
+            if row.PrimaryKey == 'DistanceX':
+                dx_lst.append(extract_value_and_time(row))
+            if row.PrimaryKey == 'DistanceY':
+                dy_lst.append(extract_value_and_time(row))
+            if row.PrimaryKey == 'DistanceAbs':
+                da_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == '561':
                 # Position indicator
                 grip_lst.append(extract_value_and_time(row))
@@ -202,7 +211,8 @@ class DataLoader(object):
 
         return robot_x_lst, robot_y_lst, robot_z_lst, \
                conv1_lst, conv2_lst, conv3_lst, \
-               qc_lst, grip_lst, pos_lst
+               qc_lst, dx_lst, dy_lst, da_lst, \
+               grip_lst, pos_lst
 
 
     def _normalize(self, array: np.array) -> np.array:
@@ -226,11 +236,24 @@ class DataLoader(object):
 
 
 class VectorLoader(DataLoader):
+    """ Load x,y vector pairs for use with scikit learn models. """
 
-    def _process_table(self, sample):
+    def _process_table(self, sample, full_y=False):
+        """ Process tabulated input data and return the model input
+            and target values.
+
+        Args:
+            sample (CellSample): Cell sample encoding a processed 
+                input file.
+
+        Returns:
+            x: (np.array) model input.
+            y: (np.array) model output.
+        """
         robot_x_lst, robot_y_lst, robot_z_lst, \
             conv1_lst, conv2_lst, conv3_lst, \
-            qc_lst, grip_lst, pos_lst = self._load_table(sample)
+            qc_lst, dx_lst, dy_lst, da_lst, \
+            grip_lst, pos_lst = self._load_table(sample)
 
         x_array = self._normalize(np.stack(robot_x_lst))
         y_array = self._normalize(np.stack(robot_y_lst))
@@ -242,7 +265,11 @@ class VectorLoader(DataLoader):
 
         grip_array = np.stack(grip_lst)
         pos_array = np.stack(pos_lst)
+
         qc_array = np.stack(qc_lst)
+        dx_array = np.stack(dx_lst)
+        dy_array = np.stack(dy_lst)
+        da_array = np.stack(da_lst)
 
         #drop_white_time = pos_array[1, 1]
         #drop_black_time = pos_array[-1, 1]
@@ -314,7 +341,15 @@ class VectorLoader(DataLoader):
                       max_belt])
         
         # the last recorded qc value counts.
-        y = np.array(qc_array[-1, 0])
+
+        if full_y:
+            y = np.array([qc_array[-1, 0],
+                          dx_array[-1, 0],
+                          dy_array[-1, 0],
+                          da_array[-1, 0]])
+        else:
+            y = np.array(qc_array[-1, 0])
+
         # print(qc_lst)
         return x, y
 
@@ -322,7 +357,7 @@ class VectorLoader(DataLoader):
         """Write the svm input into a csv file.
         Args:
             path (str, optional): [description]. Defaults to './input/'.
-        """        
+        """
         pandas.DataFrame(data=self.x_array,
                          columns=['drop_white_pos_y',
                                   'drop_white_pos_z',
@@ -332,60 +367,25 @@ class VectorLoader(DataLoader):
                                   'drop_black_pos_z',
                                   'max_belt']).to_csv(path + 'x.csv')
         pandas.DataFrame(data=self.y_array,
-                         columns=['quality']).to_csv(path + 'y.csv')
+                         columns=['quality',
+                                  'dx',
+                                  'dy',
+                                  'da']).to_csv(path + 'y.csv')
 
 
-class SequenceLoader(DataLoader):
-
-    def _process_table(self, sample):
-        robot_x_lst, robot_y_lst, robot_z_lst, \
-            conv1_lst, conv2_lst, conv3_lst, \
-            qc_lst, grip_lst, pos_lst = self._load_table(sample)
-        
-        x_array = self._normalize(np.stack(robot_x_lst))
-        y_array = self._normalize(np.stack(robot_y_lst))
-        z_array = self._normalize(np.stack(robot_z_lst))
-
-        # interpolate y and z to the sampling points of x.
-        y_array = np.interp(x=x_array[:100, 1],
-                            xp=y_array[:, 1],
-                            fp=y_array[:, 0])
-        z_array = np.interp(x=x_array[:100, 1],
-                            xp=z_array[:, 1],
-                            fp=z_array[:, 0])
-        x_array = x_array[:100, 0]
-        belt1_array = self._normalize(self._process_belt_data(conv1_lst, sample))
-        belt2_array = self._normalize(self._process_belt_data(conv2_lst, sample))
-        belt3_array = self._normalize(self._process_belt_data(conv3_lst, sample))
-
-        assert belt1_array.shape[0] == 1, 'belt1 not scalar.'
-        assert belt2_array.shape[0] == 1, 'belt2 not scalar.'
-        assert belt3_array.shape[0] == 1, 'belt3 not scalar.'
-        belt1_array = np.ones_like(x_array)*belt1_array[0, 0]
-        belt2_array = np.ones_like(x_array)*belt2_array[0, 0]
-        belt3_array = np.ones_like(x_array)*belt3_array[0, 0]
-
-        grip_array = np.stack(grip_lst)
-        pos_array = np.stack(pos_lst)
-        qc_array = np.stack(qc_lst)
-
-        x_in = np.stack([x_array, y_array, z_array,
-                         belt1_array, belt2_array, belt3_array], axis=-1)
-        y_in = np.array(qc_array[-1, 0])
-
-        # blow up the smaller arrays to match the rest in size.
-        # print('stop', belt1_array.shape)
-        return x_in, y_in
 
 if __name__ == '__main__':
     path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
-                './01_Data/201027/use_case1/Processed/Samples/',
-                './01_Data/201030/use_case1/Processed/Samples/',
-                './01_Data/201030/use_case2/Processed/Samples/',
-                './01_Data/201030/use_case3/Processed/Samples/',
-                './01_Data/201030/use_case4/Processed/Samples/',
-                './01_Data/201030/use_case5/Processed/Samples/',
-                './01_Data/201030/use_case6/Processed/Samples/']
+                './01_Data/201027/use_case1/Processed/Samples/']
+
+    # path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
+    #             './01_Data/201027/use_case1/Processed/Samples/',
+    #             './01_Data/201030/use_case1/Processed/Samples/',
+    #             './01_Data/201030/use_case2/Processed/Samples/',
+    #             './01_Data/201030/use_case3/Processed/Samples/',
+    #             './01_Data/201030/use_case4/Processed/Samples/',
+    #             './01_Data/201030/use_case5/Processed/Samples/',
+    #             './01_Data/201030/use_case6/Processed/Samples/']
 
     # os.chdir(os.path.dirname(__file__))
     # print(os.getcwd())
@@ -394,7 +394,8 @@ if __name__ == '__main__':
     # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
     # sequence_data = SequenceLoader(case_path_lst=path_lst)
 
-    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
+    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False,
+                                  full_y=True)
 
     # uncomment to write new file.
-    # demo_cell_data.write_xy_vectors_to_file()
+    demo_cell_data.write_xy_vectors_to_file()

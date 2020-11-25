@@ -35,10 +35,9 @@ makes the assumptions documented below.
   - 28: conv2
   - 29: conv3
   
-  Higher the number, faster the speed. The range goes from 300 to 950 in values.
+ The Higher the number, the faster the speed. The range goes from 300 to 950 in values.
 
 ###### Flag:
-
 - 561: Flag_grip
   - 0: Open
   - 1: Close
@@ -50,7 +49,6 @@ makes the assumptions documented below.
 
 
 ###### Vector approach
-
 Input:
   - Drop arm position for white and black discs.
   - Max raw conveyor "speed" value.
@@ -67,11 +65,9 @@ Required data:
 Input:
   - Complete arm pos sequences.
   - Complete belt speed sequences.
-  
 
 Output:
  - Quality control float (regression) / bool (classification).
  
 Required data (Problem!):
  - RNNs models in the literature use weeks/months of data.
-
