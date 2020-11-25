@@ -18,6 +18,10 @@ and test our models. To reproduce results from the paper run
 The industrial demo setting we consider is
 shown in the video below:
 
+##### Dependencies:
+Code in this paper has been tested using python 3.7.6, 
+numpy 1.19.2, pandas 1.1.3 and sklearn 0.23.2.
+
 ###### Demo Video:
 ![Alt Text](demo.gif)
 
