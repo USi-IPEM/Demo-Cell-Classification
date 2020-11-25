@@ -1,3 +1,14 @@
+##### Machine Learning for industrial process control.
+
+In this repository we explore predictive quality control using
+machine learning. The industrial demo setting we consider is
+shown in the video below:
+
+###### Demo Video:
+![Alt Text](demo.gif)
+
+Regarding the data which can be found in the 01_Data folder our code
+makes the assumptions documented below.
 
 Quality control
 ---------------
