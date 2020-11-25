@@ -371,6 +371,20 @@ class VectorLoader(DataLoader):
                                   'dx',
                                   'dy',
                                   'da']).to_csv(path + 'y.csv')
+        all_in_one = np.concatenate([self.x_array, self.y_array], axis=1)
+        pandas.DataFrame(data=all_in_one,
+                         columns=['drop_white_pos_y',
+                                  'drop_white_pos_z',
+                                  'drop_white_pos_x',
+                                  'drop_black_pos_x',
+                                  'drop_black_pos_y',
+                                  'drop_black_pos_z',
+                                  'max_belt',
+                                  'quality',
+                                  'dx',
+                                  'dy',
+                                  'da']).to_csv(path + 'all_in_one.csv')
+        print('done')
 
 
 
