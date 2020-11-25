@@ -8,7 +8,8 @@ from collections import namedtuple
 import matplotlib.pyplot as plt
 
 CellSample = namedtuple('CellSample',
-                        ['use_case',
+                        ['date',
+                         'use_case',
                          'sample_file',
                          'raw_data',
                          'x', 'y'])
@@ -107,9 +108,11 @@ class DataLoader(object):
             for root, dirs, files in os.walk(path):
                 for current_file in files:
                     pandas_file = pandas.read_csv(root + current_file)
+                    date = path.split('/')[2]
                     use_case = path.split('/')[3]
                     sample_file = current_file
                     sample_list.append(CellSample(use_case=use_case,
+                                                  date=date,
                                                   sample_file=sample_file,
                                                   raw_data=pandas_file,
                                                   x=None, y=None))
@@ -123,13 +126,12 @@ class DataLoader(object):
                 x, y = self._process_table(sample)        
                 self.sample_list.append(CellSample(use_case=sample.use_case,
                                                 sample_file=sample.sample_file,
+                                                date=sample.date,
                                                 raw_data=sample.raw_data,
                                                 x=x,
                                                 y=y))
             except Exception as e:
                 print('skipping', sample.use_case, sample.sample_file, e)
-
-
 
     def _load_table(self, sample):
         """ Extrat the input x and target y values from the current
@@ -186,6 +188,10 @@ class DataLoader(object):
                 # belt3 data.
                 conv3_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == 'ResultCode':
+                val = extract_value_and_time(row)
+                # import pdb; pdb.set_trace()
+                # if val[0] > 1:
+                #    print('qc > 1', sample.date, sample.use_case, sample.sample_file)
                 qc_lst.append(extract_value_and_time(row))
             if row.PrimaryKey == '561':
                 # Position indicator
@@ -215,7 +221,7 @@ class DataLoader(object):
             return np.stack(lst)
         else:
             print('Warning belt array empty.',
-                  sample.use_case, sample.sample_file)
+                  sample.date, sample.use_case, sample.sample_file)
             return np.zeros((1, 2))
 
 
@@ -238,22 +244,12 @@ class VectorLoader(DataLoader):
         pos_array = np.stack(pos_lst)
         qc_array = np.stack(qc_lst)
 
-        #drop_black_time = pos_array[1, 1]
-        #drop_white_time = pos_array[-1, 1]
-        drop_black_time = grip_array[1, 1]
-        drop_white_time = grip_array[-1, 1]
+        #drop_white_time = pos_array[1, 1]
+        #drop_black_time = pos_array[-1, 1]
+        drop_white_time = grip_array[1, 1]
+        drop_black_time = grip_array[-1, 1]
         
         # compute drop position black
-        drop_black_pos_x = np.interp(x=drop_black_time,
-                                     xp=x_array[:, 1],
-                                     fp=x_array[:, 0])
-        drop_black_pos_y = np.interp(x=drop_black_time,
-                                     xp=y_array[:, 1],
-                                     fp=y_array[:, 0])
-        drop_black_pos_z = np.interp(x=drop_black_time,
-                                     xp=z_array[:, 1],
-                                     fp=z_array[:, 0])
-        # compute drop position white
         drop_white_pos_x = np.interp(x=drop_white_time,
                                      xp=x_array[:, 1],
                                      fp=x_array[:, 0])
@@ -261,6 +257,16 @@ class VectorLoader(DataLoader):
                                      xp=y_array[:, 1],
                                      fp=y_array[:, 0])
         drop_white_pos_z = np.interp(x=drop_white_time,
+                                     xp=z_array[:, 1],
+                                     fp=z_array[:, 0])
+        # compute drop position white
+        drop_black_pos_x = np.interp(x=drop_black_time,
+                                     xp=x_array[:, 1],
+                                     fp=x_array[:, 0])
+        drop_black_pos_y = np.interp(x=drop_black_time,
+                                     xp=y_array[:, 1],
+                                     fp=y_array[:, 0])
+        drop_black_pos_z = np.interp(x=drop_black_time,
                                      xp=z_array[:, 1],
                                      fp=z_array[:, 0])
 
@@ -290,6 +296,7 @@ class VectorLoader(DataLoader):
             plt.plot(belt3_array[:, 1], belt3_array[:, 0], '.', label='belt3')
             plt.show()
 
+            print(sample.date)
             print(sample.use_case)
             print(sample.sample_file)
 
@@ -298,12 +305,12 @@ class VectorLoader(DataLoader):
                            np.max(belt2_array[:, 0]),
                            np.max(belt3_array[:, 0])))
  
-        x = np.array([drop_black_pos_y,
-                      drop_black_pos_z,
-                      drop_black_pos_x,
-                      drop_white_pos_x,
-                      drop_white_pos_y,
+        x = np.array([drop_white_pos_y,
                       drop_white_pos_z,
+                      drop_white_pos_x,
+                      drop_black_pos_x,
+                      drop_black_pos_y,
+                      drop_black_pos_z,
                       max_belt])
         
         # the last recorded qc value counts.
@@ -317,12 +324,12 @@ class VectorLoader(DataLoader):
             path (str, optional): [description]. Defaults to './input/'.
         """        
         pandas.DataFrame(data=self.x_array,
-                         columns=['drop_black_pos_y',
-                                  'drop_black_pos_z',
-                                  'drop_black_pos_x',
-                                  'drop_white_pos_x',
-                                  'drop_white_pos_y',
+                         columns=['drop_white_pos_y',
                                   'drop_white_pos_z',
+                                  'drop_white_pos_x',
+                                  'drop_black_pos_x',
+                                  'drop_black_pos_y',
+                                  'drop_black_pos_z',
                                   'max_belt']).to_csv(path + 'x.csv')
         pandas.DataFrame(data=self.y_array,
                          columns=['quality']).to_csv(path + 'y.csv')
@@ -372,16 +379,22 @@ class SequenceLoader(DataLoader):
 
 if __name__ == '__main__':
     path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
-                './01_Data/201027/use_case1/Processed/Samples/']
+                './01_Data/201027/use_case1/Processed/Samples/',
+                './01_Data/201030/use_case1/Processed/Samples/',
+                './01_Data/201030/use_case2/Processed/Samples/',
+                './01_Data/201030/use_case3/Processed/Samples/',
+                './01_Data/201030/use_case4/Processed/Samples/',
+                './01_Data/201030/use_case5/Processed/Samples/',
+                './01_Data/201030/use_case6/Processed/Samples/']
 
     # os.chdir(os.path.dirname(__file__))
     # print(os.getcwd())
 
     # uncommenting this line will show data plots.
-    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
+    # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=True)
     # sequence_data = SequenceLoader(case_path_lst=path_lst)
 
-    # demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
+    demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False)
 
     # uncomment to write new file.
     # demo_cell_data.write_xy_vectors_to_file()
