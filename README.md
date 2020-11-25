@@ -12,7 +12,8 @@ keys, floats and constants.
 Our Preprocessing code is available in ```02_Preprocessing```.
 
 Finally the folder ```classifier``` contains code to train
-and test our models.
+and test our models. To reproduce results from the paper run
+```python classifier/train_test_classifiers.py```.
 
 The industrial demo setting we consider is
 shown in the video below:
