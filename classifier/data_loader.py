@@ -30,6 +30,7 @@ class DataLoader(object):
             full_y (bool): If True construct y using qc and distance values.
             normalize (bool): If True data normalization is run.
         """
+        self.normalize = normalize
         self.full_y = full_y
         self.seed = seed
         self.debug = debug
@@ -65,6 +66,14 @@ class DataLoader(object):
         train_std = np.std(self.x_train, axis=0)
         self.x_train = (self.x_train - train_mean)/train_std
         self.x_test = (self.x_test - train_mean)/train_std
+
+        if self.full_y:
+            # take care of dx,dy and dz.
+            yd_train_mean = np.mean(self.y_train[:, 1:], axis=0)
+            yd_train_std = np.std(self.y_train[:, 1:], axis=0)
+            # normalize only the distances do not touch the labels.
+            self.y_train[:, 1:] = (self.y_train[:, 1:] - yd_train_mean) / yd_train_std
+            self.y_test[:, 1:] = (self.y_test[:, 1:] - yd_train_mean) / yd_train_std
 
     def get_train_xy(self):
         """ Returns the training data vectors.
@@ -418,7 +427,7 @@ if __name__ == '__main__':
     # sequence_data = SequenceLoader(case_path_lst=path_lst)
 
     demo_cell_data = VectorLoader(case_path_lst=path_lst, debug=False,
-                                  full_y=True)
+                                  full_y=True, normalize=True)
 
     # uncomment to write new file.
     demo_cell_data.write_xy_vectors_to_file()
