@@ -376,19 +376,32 @@ class VectorLoader(DataLoader):
         Args:
             path (str, optional): [description]. Defaults to './input/'.
         """
-        pandas.DataFrame(data=self.x_array,
-                         columns=['drop_white_pos_y',
-                                  'drop_white_pos_z',
-                                  'drop_white_pos_x',
-                                  'drop_black_pos_x',
-                                  'drop_black_pos_y',
-                                  'drop_black_pos_z',
-                                  'max_belt']).to_csv(path + 'x.csv')
-        pandas.DataFrame(data=self.y_array,
-                         columns=['quality',
-                                  'dx',
-                                  'dy',
-                                  'da']).to_csv(path + 'y.csv')
+        def write_x(x_array, file_name='x.csv'):
+            pandas.DataFrame(data=x_array,
+                            columns=['drop_white_pos_y',
+                                    'drop_white_pos_z',
+                                    'drop_white_pos_x',
+                                    'drop_black_pos_x',
+                                    'drop_black_pos_y',
+                                    'drop_black_pos_z',
+                                    'max_belt']).to_csv(path + file_name)
+        
+        def write_y(y_array, file_name='y.csv'):
+            pandas.DataFrame(data=y_array,
+                            columns=['quality',
+                                    'dx',
+                                    'dy',
+                                    'da']).to_csv(path + file_name)
+
+
+        write_x(self.x_array, 'x_all.csv')
+        write_x(self.x_train, 'x_train.csv')
+        write_x(self.x_test, 'x_test.csv')
+
+        write_y(self.y_array, 'y_all.csv')
+        write_y(self.y_train, 'y_train.csv')
+        write_y(self.y_test,  'y_test.csv')
+
         all_in_one = np.concatenate([self.x_array, self.y_array], axis=1)
         pandas.DataFrame(data=all_in_one,
                          columns=['drop_white_pos_y',
