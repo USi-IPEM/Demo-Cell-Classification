@@ -18,7 +18,7 @@ class DataLoader(object):
     """ Load the demo-cell data. Base class for vector and sequence loaders. """
 
     def __init__(self, case_path_lst: list, debug: bool=False,
-                 test_size: int=20, seed: int=1, full_y: bool=False,
+                 test_size: int=50, seed: int=1, full_y: bool=False,
                  normalize=True):
         """ Creat a data loader object for the demo cell.
 

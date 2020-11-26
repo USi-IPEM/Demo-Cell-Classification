@@ -13,7 +13,8 @@ path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
             './01_Data/201030/use_case2/Processed/Samples/',
             './01_Data/201030/use_case3/Processed/Samples/',
             './01_Data/201030/use_case4/Processed/Samples/',
-            './01_Data/201030/use_case5/Processed/Samples/']
+            './01_Data/201030/use_case5/Processed/Samples/',
+            './01_Data/201030/use_case6/Processed/Samples/']
 
 
 # os.chdir(os.path.dirname(__file__))
@@ -28,21 +29,21 @@ svm.fit(X_train, y_train.ravel())
 svm_out = svm.predict(X_test)
 ## compute accuracy
 y_test = np.squeeze(y_test)
-print('sample svm_out    ', svm_out.astype(np.uint8))
-print('sample y test     ', y_test.astype(np.uint8))
-print('svm_out == y_test ', (svm_out == y_test).astype(np.uint8))
+print('sample svm_out    ', svm_out.astype(np.uint8)[:25])
+print('sample y test     ', y_test.astype(np.uint8)[:25])
+print('svm_out == y_test ', (svm_out == y_test).astype(np.uint8)[:25])
 print('SVM accuracy:',
       np.sum((svm_out == y_test).astype(np.float32))/svm_out.shape[0]*100)
 
 ### MLP ---------------------------------------------------------------###
-mlp = MLPClassifier(max_iter=2000)
+mlp = MLPClassifier(hidden_layer_sizes=(250, 250, 250))
 mlp.fit(X_train, y_train.ravel())
 mlp_out = mlp.predict(X_test)
 ## compute accuracy
 y_test = np.squeeze(y_test)
-print('sample mlp_out    ', mlp_out.astype(np.uint8))
-print('sample y test     ', y_test.astype(np.uint8))
-print('mlp_out == y_test ', (mlp_out == y_test).astype(np.uint8))
+print('sample mlp_out    ', mlp_out.astype(np.uint8)[:25])
+print('sample y test     ', y_test.astype(np.uint8)[:25])
+print('mlp_out == y_test ', (mlp_out == y_test).astype(np.uint8)[:25])
 print('MLP accuracy:',
       np.sum((mlp_out == y_test).astype(np.float32))/mlp_out.shape[0]*100)
 
@@ -52,9 +53,9 @@ tree.fit(X_train, y_train.ravel())
 tree_out = tree.predict(X_test)
 ## compute accuracy
 y_test = np.squeeze(y_test)
-print('sample tree_out   ', tree_out.astype(np.uint8))
-print('sample y test     ', y_test.astype(np.uint8))
-print('tree_out == y_test', (tree_out == y_test).astype(np.uint8))
+print('sample tree_out   ', tree_out.astype(np.uint8)[:25])
+print('sample y test     ', y_test.astype(np.uint8)[:25])
+print('tree_out == y_test', (tree_out == y_test).astype(np.uint8)[:25])
 print('tree accuracy:',
       np.sum((tree_out == y_test).astype(np.float32))/tree_out.shape[0]*100)
 print('done')
