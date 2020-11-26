@@ -18,7 +18,8 @@ class DataLoader(object):
     """ Load the demo-cell data. Base class for vector and sequence loaders. """
 
     def __init__(self, case_path_lst: list, debug: bool=False,
-                 test_size: int=20, seed: int=1, full_y: bool=False):
+                 test_size: int=20, seed: int=1, full_y: bool=False,
+                 normalize=True):
         """ Creat a data loader object for the demo cell.
 
         Args:
@@ -27,6 +28,7 @@ class DataLoader(object):
             test_size (int): Number of samples set aside for testing.
             seed (int): Initial seed for the random number generator.
             full_y (bool): If True construct y using qc and distance values.
+            normalize (bool): If True data normalization is run.
         """
         self.full_y = full_y
         self.seed = seed
@@ -44,12 +46,25 @@ class DataLoader(object):
         self._load()
         self._create_xy()
         self._create_data_array()
-        # self._preprocess()
         self._split()
+        if normalize:
+            self._normalize()
         if not full_y:
-            print('baseline:',
+            print('x train shape', self.x_train.shape)
+            print('x test shape', self.x_test.shape)
+            print('baseline ok   :',
                   '%.1f' % ((1. - np.sum(self.y_array)/self.y_array.shape[0])*100),
                   '%')
+            print('baseline fault:',
+                  '%.1f' % ((np.sum(self.y_array)/self.y_array.shape[0])*100),
+                  '%')
+
+    def _normalize(self):
+        """ Normalize train and test data """
+        train_mean = np.mean(self.x_train, axis=0)
+        train_std = np.std(self.x_train, axis=0)
+        self.x_train = (self.x_train - train_mean)/train_std
+        self.x_test = (self.x_test - train_mean)/train_std
 
     def get_train_xy(self):
         """ Returns the training data vectors.
@@ -214,12 +229,6 @@ class DataLoader(object):
                qc_lst, dx_lst, dy_lst, da_lst, \
                grip_lst, pos_lst
 
-
-    def _normalize(self, array: np.array) -> np.array:
-            # Normalize the input array first channel.
-            array[:, 0] = (array[:, 0] - np.mean(array[:, 0]))/(np.std(array[:, 0]) + 0.000001)
-            return array
-
     def _process_table(self, sample):
         # Implemented in Child classes Vector
         # or Sequence Loader.
@@ -255,13 +264,13 @@ class VectorLoader(DataLoader):
             qc_lst, dx_lst, dy_lst, da_lst, \
             grip_lst, pos_lst = self._load_table(sample)
 
-        x_array = self._normalize(np.stack(robot_x_lst))
-        y_array = self._normalize(np.stack(robot_y_lst))
-        z_array = self._normalize(np.stack(robot_z_lst))
+        x_array = np.stack(robot_x_lst)
+        y_array = np.stack(robot_y_lst)
+        z_array = np.stack(robot_z_lst)
 
-        belt1_array = self._normalize(self._process_belt_data(conv1_lst, sample))
-        belt2_array = self._normalize(self._process_belt_data(conv2_lst, sample))
-        belt3_array = self._normalize(self._process_belt_data(conv3_lst, sample))
+        belt1_array = self._process_belt_data(conv1_lst, sample)
+        belt2_array = self._process_belt_data(conv2_lst, sample)
+        belt3_array = self._process_belt_data(conv3_lst, sample)
 
         grip_array = np.stack(grip_lst)
         pos_array = np.stack(pos_lst)
