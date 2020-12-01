@@ -5,6 +5,7 @@ from sklearn import svm
 from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 from data_loader import VectorLoader
+from sklearn.metrics import confusion_matrix
 
 path_lst = ['./01_Data/201027/use_case2/Processed/Samples/',
             './01_Data/201027/use_case1/Processed/Samples/',
@@ -58,4 +59,11 @@ print('sample y test     ', y_test.astype(np.uint8)[:25])
 print('tree_out == y_test', (tree_out == y_test).astype(np.uint8)[:25])
 print('tree accuracy:',
       np.sum((tree_out == y_test).astype(np.float32))/tree_out.shape[0]*100)
+
+### Confusion Matrix ---------------------------------------------------###
+
+conf_matrix = confusion_matrix(y_test, mlp_out)
+print('Confusion Matrix:')
+conf_matrix
+
 print('done')
