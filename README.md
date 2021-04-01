@@ -17,6 +17,16 @@ and test our models. To reproduce results from the paper run
 ###### Dependencies:
 Code in this paper has been tested using python 3.7.6, 
 numpy 1.19.2, pandas 1.1.3 and sklearn 0.23.2.
+Install these using 
+```
+$ pip install -U scikit-learn
+```
+For the tensorboard logs to work run:
+```
+$ pip install -U torch
+$ pip install -U tensorboard
+```
+
 
 ###### Demo Video:
 The industrial demo setting we consider is
