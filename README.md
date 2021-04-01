@@ -28,7 +28,7 @@ $ pip install -U tensorboard
 ```
 To visualize the logs run:
 ```
-$ pip install -U tensorboard --logdir=runs
+$ tensorboard --logdir=runs
 ```
 
 ###### Demo Video:
