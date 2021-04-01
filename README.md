@@ -26,7 +26,10 @@ For the tensorboard logs to work run:
 $ pip install -U torch
 $ pip install -U tensorboard
 ```
-
+To visualize the logs run:
+```
+$ pip install -U tensorboard --logdir=runs
+```
 
 ###### Demo Video:
 The industrial demo setting we consider is
