@@ -64,6 +64,13 @@ print('tree accuracy:',
 
 conf_matrix = confusion_matrix(y_test, mlp_out)
 print('Confusion Matrix:')
-conf_matrix
+print(conf_matrix)
 
 print('done')
+
+### MLP Log
+from torch.utils.tensorboard.writer import SummaryWriter
+mlp_writer = SummaryWriter(comment='_MLP')
+for step, loss_value in enumerate(mlp.loss_curve_):
+      mlp_writer.add_scalar(tag='acc', scalar_value=loss_value,
+                            global_step=step)
