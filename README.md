@@ -1,4 +1,4 @@
-##### Machine Learning for industrial process control.
+##### Machine Learning for industrial process control
 
 In this repository we explore predictive quality control using
 machine learning.
